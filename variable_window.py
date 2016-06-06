@@ -6,28 +6,23 @@
 import numpy as np
 import cv2
 import argparse
-from matplotlib import pyplot as plt
-
-NUM_DISP=32
+import parameters as params
 
 def disparity(imgL, imgR, filter_size):
-    window_size = 3
-    min_disp = 0#16
-    num_disp = NUM_DISP#112-min_disp
-    block_size = 5
+    window_size = filter_size
     stereo = cv2.StereoSGBM_create(
-        minDisparity=min_disp,
-        numDisparities=num_disp,
-        blockSize=block_size,
+        minDisparity=params.MIN_DISP,
+        numDisparities=params.NUM_DISP,
+        blockSize=params.BLOCK_SIZE,
         P1 = 8*3*window_size**2,
         P2 = 32*3*window_size**2,
-        disp12MaxDiff = 1,
-        uniquenessRatio = 10,
-        speckleWindowSize = 100,
-        speckleRange = 32)
+        disp12MaxDiff = params.DISP12MAXDIFF,
+        uniquenessRatio = params.UNIQUENESSRATIO,
+        speckleWindowSize = params.SPECKLEWINDOWSIZE,
+        speckleRange = params.SPECKLERANGE)
     print('computing disparity...')
     disp = stereo.compute(imgL, imgR).astype(np.float32) / 16.0
-    disparity = (disp-min_disp)/num_disp
+    disparity = (disp-params.MIN_DISP)/params.NUM_DISP
     cv2.imshow('disparity',  disparity)
     return disparity
 
@@ -46,12 +41,17 @@ def matrix_mean(matrix):
 def cost_map(imgL, imgR):
     rows = len(imgL)
     columns = len(imgL[0])
-    cost = np.zeros((rows, columns, NUM_DISP))
+    cost = np.zeros((rows, columns, params.NUM_DISP))
     for x in range(0, rows-1):
         for y in range(0, columns-1):
-            for d in range(0, NUM_DISP-1):
-                cost[x,y,d] = abs(imgL[x,y] - imgR[x-d,y])
+            for d in range(0, params.NUM_DISP-1):
+                cost[x,y,d] = abs(int(imgL[x,y]) - int(imgR[x-d,y]))
     return cost
+
+def fixed_window(cost_map, filter_size):
+    matrix = []
+
+    return matrix
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -77,13 +77,14 @@ if __name__ == '__main__':
     #variable_window(disparity, 0, 0)
 
     #Cost cube aggregation
-    cm = cost_map(imgL, imgR)
+    cost_map = cost_map(imgL, imgR)
     print("cost map: ", cm)
 
     #Fixed Window
+    fixed_window = fixed_window(cost_map, filter_size)
 
     #Variable Window
-
+    #variable_window(fixed_window, filter_size)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
