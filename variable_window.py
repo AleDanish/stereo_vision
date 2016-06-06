@@ -26,16 +26,40 @@ def disparity(imgL, imgR, filter_size):
     print('computing disparity...')
     disp = stereo.compute(imgL, imgR).astype(np.float32) / 16.0
     disparity = (disp-min_disp)/num_disp
+    print("disparity: ", disparity)
     cv2.imshow('disparity',  disparity)
     return disparity
 
-def variable_window(disparity, x, y):
-    print("size: ", disparity.size)
-    size=3
+def matrix_mean(matrix):
+    rows = len(matrix)
+    columns = len(matrix[0])
+    sum = 0
+    for i in range(rows):
+        for j in range(columns):
+    	    sum += matrix[i][j]
+            print("sum_c:", sum)
+        print("sum_r", sum)
+    print("sum", sum)
+    print("m:", sum/(rows*columns))
+    return sum/(rows*columns)
+
+def variable_window(disparity, x, y): #mappa di diparità e coordinate del punto
+    print("disparity size: ", disparity.size)
+    size=2
+    mean=0
     for i in range(1, size, disparity.size):
-        step = size / 2
-        a=[x-step : x+step][y-step : y+step]
-        size += 2
+        size += 1
+        x1 = x - step
+        x2 = x + step
+        y1 = y - step
+        y2 = y + step
+        if (x1 < 0) or (x2 < 0) or (y1<0) or (y2<0): #near a border
+            return mean
+#        a=[x1:x2][y1:y2]
+        a = [[1,2,],[3,4]]
+        mean = matrix_mean(a)
+        print("mean: ", mean)
+        size += 1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -58,7 +82,9 @@ if __name__ == '__main__':
 #        cv2.imshow('box filt', cv2.boxFilter(imgL, cv2.CV_8U, (filter_size, filter_size)))
         #boxFilter(imgL, int(filter_size))
 
-    disparity(imgL, imgR, filter_size)
+    disparity = disparity(imgL, imgR, filter_size)
+
+#    variable_window(disparity)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
