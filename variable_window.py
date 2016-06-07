@@ -70,9 +70,17 @@ def fixed_window(cost_map, filter_size):
     columns = len(cost_map[0])
     for x in range(rows):
         for y in range(columns):
-            m = getSubMatrix(cost_map, x, y, filter_size)
-            c = getMinValue(m)
-    return matrix
+            sub_matrix = getSubMatrix(cost_map, x, y, filter_size)
+            cost_map[x][y] = getMinValue(sub_matrix)
+    return cost_map
+
+def variable_window(cost_map_ filter_size):
+    matrix = []
+    rows = len(cost_map)
+    columns = len(cost_map[0])
+    for x in range(rows):
+        for y in range(columns):
+        
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
