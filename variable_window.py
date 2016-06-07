@@ -83,10 +83,11 @@ if __name__ == '__main__':
 
     # Fixed Window
     fixed_window_matrix = fixed_window(cost_map, filter_size)
-    print("fixed window")
+    print("fixed window", fixed_window)
 
     # Variable Window
-    #variable_window(fixed_window, filter_size)
+    #variable_window = variable_window(fixed_window, filter_size)
+    #print("variable window", variable_window)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
