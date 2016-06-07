@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import argparse
 import parameters as params
+import utils
 
 def disparity(imgL, imgR, filter_size):
     window_size = filter_size
@@ -26,18 +27,6 @@ def disparity(imgL, imgR, filter_size):
     cv2.imshow('disparity',  disparity)
     return disparity
 
-def matrix_mean(matrix):
-    rows = len(matrix)
-    columns = len(matrix[0])
-    sum = 0
-    for i in range(rows):
-        for j in range(columns):
-    	    sum += matrix[i][j]
-    return sum/(rows*columns)
-
-#def variable_window(disparity, x, y):
-    #mappa di diparita' e coordinate del punto
-
 def cost_map(imgL, imgR):
     rows = len(imgL)
     columns = len(imgL[0])
@@ -48,38 +37,22 @@ def cost_map(imgL, imgR):
                 cost[x,y,d] = abs(int(imgL[x,y]) - int(imgR[x-d,y]))
     return cost
 
-def getSubMatrix(matrix, x, y, filter_size):
-    rows = len(matrix)
-    columns = len(matrix[0])
-    x1 = max(0, x - filter_size/2)
-    x2 = min(rows, x + filter_size/2)
-    y1 = max(0, y - filter_size/2)
-    y2 = min(columns, y + filter_size/2)
-    return matrix[x1:x2, y1:y2]
-
-def getMinValue(matrix):
-    value = matrix[0][0]
-    for x in range(0, len(matrix)):
-        for y in range(1, len(matrix[0])):
-            value = min(value.all(), matrix[x,y].all())
-    return value
-
 def fixed_window(cost_map, filter_size):
     matrix = []
     rows = len(cost_map)
     columns = len(cost_map[0])
     for x in range(rows):
         for y in range(columns):
-            sub_matrix = getSubMatrix(cost_map, x, y, filter_size)
-            cost_map[x][y] = getMinValue(sub_matrix)
-    return cost_map
+            sub_matrix = utils.get_submatrix(cost_map, x, y, filter_size)
+            matrix[x,y] = utils.get_min_value(sub_matrix)
+    return matrix
 
-def variable_window(cost_map_ filter_size):
+def variable_window(cost_map, filter_size):
     matrix = []
     rows = len(cost_map)
     columns = len(cost_map[0])
-    for x in range(rows):
-        for y in range(columns):
+   # for x in range(rows):
+   #     for y in range(columns):
         
 
 if __name__ == '__main__':
@@ -103,18 +76,16 @@ if __name__ == '__main__':
 #        cv2.imshow('box filt', cv2.boxFilter(imgL, cv2.CV_8U, (filter_size, filter_size)))
 
     disparity = disparity(imgL, imgR, filter_size)
-    #variable_window(disparity, 0, 0)
-
+ 
     #Cost cube aggregation
     cost_map = cost_map(imgL, imgR)
     print("cost map: ", cost_map)
 
-    #Fixed Window
-#    fixed_window = fixed_window(cost_map, filter_size)
-#    getMatrix(cost_map, 10, 10, filter_size)
-    c = getMinValue(cost_map)
-    print ("min val: ", c)
-    #Variable Window
+    # Fixed Window
+    fixed_window_matrix = fixed_window(cost_map, filter_size)
+    print("fixed window")
+
+    # Variable Window
     #variable_window(fixed_window, filter_size)
 
     cv2.imshow('left', imgL)
