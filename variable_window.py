@@ -86,7 +86,6 @@ if __name__ == '__main__':
     # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
     imgL = cv2.pyrDown(cv2.imread('images/img_L.png', cv2.IMREAD_GRAYSCALE))  # downscale images for faster processing
     imgR = cv2.pyrDown(cv2.imread('images/img_R.png', cv2.IMREAD_GRAYSCALE))
-    print imgL[0,0]
     if imgL is not None:
         print("Shape: " + str(imgL.shape))
         print("Size: " + str(imgL.size))
@@ -99,12 +98,13 @@ if __name__ == '__main__':
     fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
 
     # Fixed Window
-    m = fixed_window(fixed_window_matrix)
-    cv2.imshow('fixed window', m)
+    fixed_window = fixed_window(fixed_window_matrix)
+    cv2.imshow('fixed window', fixed_window)
 
     # Variable Window
     variable_window = variable_window(fixed_window_matrix, filter_size)
     print("variable window", variable_window)
+    cv2.imshow('variable window', variable_window)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
