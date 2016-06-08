@@ -46,15 +46,12 @@ def get_fixed_window_matrix(cost_map, filter_size):
             for d in range(params.NUM_DISP):
                 submatrix = utils.get_submatrix(cost_map, x, y, d, filter_size)
                 matrix[x,y,d] = utils.get_min_value(submatrix)
-#                print("submatrix: ", submatrix)
-#                print("matrix[x,y,d]: ", matrix[x,y,d])
-    print("marix row0: ", matrix[0,y,d])
     return matrix
 
 def fixed_window(matrix):
     rows = len(matrix)
     columns = len(matrix[0])
-    matrix_2D = np.zeros(shape=(rows,columns))
+    matrix_2D = np.zeros((rows,columns))
     for x in range(rows):
         for y in range(columns):
             min_value = matrix[x,y,0]
@@ -63,13 +60,18 @@ def fixed_window(matrix):
             matrix_2D[x][y] = min_value
     return matrix_2D
 
-def variable_window(cost_map, filter_size):
-    matrix = []
-    rows = len(cost_map)
-    columns = len(cost_map[0])
-   # for x in range(rows):
-   #     for y in range(columns):
-        
+def variable_window(matrix, filter_size):
+    rows = len(matrix)
+    columns = len(matrix[0])
+    matrix_2D = np.zeros((rows,columns))
+    for x in range(rows):
+        for y in range(columns):
+            local_min = []
+            for d in range(params.NUM_DISP):
+                submatrix = utils.get_submatrix(matrix, x, y, d, filter_size)
+                local_min.append(utils.get_min_value(submatrix))
+            matrix_2D[x,y] = min(local_min)
+    return matrix_2D
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -101,8 +103,8 @@ if __name__ == '__main__':
     cv2.imshow('fixed window', m)
 
     # Variable Window
-    #variable_window = variable_window(fixed_window_matrix, filter_size)
-    #print("variable window", variable_window)
+    variable_window = variable_window(fixed_window_matrix, filter_size)
+    print("variable window", variable_window)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
