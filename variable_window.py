@@ -33,14 +33,14 @@ def cost_map(imgL, imgR):
     cost = np.zeros((rows, columns, params.NUM_DISP))
     for x in range(0, rows-1):
         for y in range(0, columns-1):
-            for d in range(0, params.NUM_DISP-1):
+            for d in range(0, params.NUM_DISP):
                 cost[x,y,d] = abs(int(imgL[x,y]) - int(imgR[x-d,y]))
     return cost
 
 def get_fixed_window_matrix(cost_map, filter_size):
-    matrix = cost_map
-    rows = 10#len(cost_map)
-    columns = 10#len(cost_map[0])
+    rows = len(cost_map)
+    columns = len(cost_map[0])
+    matrix = np.zeros((rows, columns, params.NUM_DISP))
     for x in range(rows):
         for y in range(columns):
             for d in range(params.NUM_DISP):
@@ -48,6 +48,7 @@ def get_fixed_window_matrix(cost_map, filter_size):
                 matrix[x,y,d] = utils.get_min_value(submatrix)
 #                print("submatrix: ", submatrix)
 #                print("matrix[x,y,d]: ", matrix[x,y,d])
+    print("marix row0: ", matrix[0,y,d])
     return matrix
 
 def fixed_window(matrix):
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     args_dict = vars(args)
     filter_size = int(args_dict.get('filter_size'))
     if filter_size is None:
-        filter_size = 3
+        filter_size = params.DEFAULT_FILTER_SIZE
 
     print('loading images...')
     # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
@@ -88,23 +89,15 @@ if __name__ == '__main__':
         print("Shape: " + str(imgL.shape))
         print("Size: " + str(imgL.size))
         print("Type: " + str(imgL.dtype))
-#        cv2.imshow('box filt', cv2.boxFilter(imgL, cv2.CV_8U, (filter_size, filter_size)))
 
 #    disparity = disparity(imgL, imgR, filter_size)
  
     #Cost cube aggregation
     cost_map = cost_map(imgL, imgR)
-    print("cost map: ", cost_map)
+    fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
 
     # Fixed Window
-    fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
-#    cv2.imshow('fixed window', 
     m = fixed_window(fixed_window_matrix)
-    print("m: ", m)
-    for x in range(225):
-        for y in range(180):
-            m[x,y] = m[x,y] * 20
-    print("m2: ", m)
     cv2.imshow('fixed window', m)
 
     # Variable Window
