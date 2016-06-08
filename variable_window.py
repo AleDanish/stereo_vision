@@ -75,12 +75,16 @@ def variable_window(matrix, filter_size):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--filter_size')
+    parser.add_argument('-f', '--filter_size')
+    parser.add_argument('-w', '--window_type')
     args = parser.parse_args()
     args_dict = vars(args)
     filter_size = int(args_dict.get('filter_size'))
+    window_type = int(args_dict.get('window_type'))
     if filter_size is None:
         filter_size = params.DEFAULT_FILTER_SIZE
+    if window_type is None:
+        window_type = params.DEFAULT_WINDOW_TYPE
 
     print('loading images...')
     # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
@@ -97,14 +101,16 @@ if __name__ == '__main__':
     cost_map = cost_map(imgL, imgR)
     fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
 
-    # Fixed Window
-    fixed_window = fixed_window(fixed_window_matrix)
-    cv2.imshow('fixed window', fixed_window)
+    if (window_type == 'all') or (window_type == 'fixed'):
+        # Fixed Window
+        fixed_window = fixed_window(fixed_window_matrix)
+        cv2.imshow('fixed window', fixed_window)
 
-    # Variable Window
-    variable_window = variable_window(fixed_window_matrix, filter_size)
-    print("variable window", variable_window)
-    cv2.imshow('variable window', variable_window)
+    if (window_type == 'all') or (window_type == 'variable'):
+        # Variable Window
+        variable_window = variable_window(fixed_window_matrix, filter_size)
+        print("variable window", variable_window)
+        cv2.imshow('variable window', variable_window)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
