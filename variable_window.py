@@ -37,15 +37,19 @@ def cost_map(imgL, imgR):
                 cost[x,y,d] = abs(int(imgL[x,y]) - int(imgR[x-d,y]))
     return cost
 
-def fixed_window(cost_map, filter_size):
-    matrix = []
+def get_fixed_window_matrix(cost_map, filter_size):
+    matrix = cost_map
     rows = len(cost_map)
     columns = len(cost_map[0])
     for x in range(rows):
         for y in range(columns):
-            sub_matrix = utils.get_submatrix(cost_map, x, y, filter_size)
-            matrix[x,y] = utils.get_min_value(sub_matrix)
+            for d in range(params.NUM_DISP):
+                sub_matrix = utils.get_submatrix(cost_map, x, y, d, filter_size)
+                matrix[x,y,d] = utils.get_min_value(sub_matrix)
     return matrix
+
+#def fixed_window(matrix):
+    
 
 def variable_window(cost_map, filter_size):
     matrix = []
@@ -75,18 +79,19 @@ if __name__ == '__main__':
         print("Type: " + str(imgL.dtype))
 #        cv2.imshow('box filt', cv2.boxFilter(imgL, cv2.CV_8U, (filter_size, filter_size)))
 
-    disparity = disparity(imgL, imgR, filter_size)
+#    disparity = disparity(imgL, imgR, filter_size)
  
     #Cost cube aggregation
     cost_map = cost_map(imgL, imgR)
     print("cost map: ", cost_map)
 
     # Fixed Window
-    fixed_window_matrix = fixed_window(cost_map, filter_size)
-    print("fixed window", fixed_window)
+    fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
+    print("fixed window", fixed_window_matrix)
+    #fixed_window(fixed_window_matrix)
 
     # Variable Window
-    #variable_window = variable_window(fixed_window, filter_size)
+    #variable_window = variable_window(fixed_window_matrix, filter_size)
     #print("variable window", variable_window)
 
     cv2.imshow('left', imgL)
