@@ -6,15 +6,6 @@
 import parameters as params
 import numpy as np
 
-def matrix_mean(matrix):
-    rows = len(matrix)
-    columns = len(matrix[0])
-    sum = 0
-    for i in range(rows):
-        for j in range(columns):
-    	    sum += matrix[i][j]
-    return sum/(rows*columns)
-
 def get_submatrix(matrix, x, y, d, filter_size):
     rows = len(matrix)
     columns = len(matrix[0])
@@ -30,3 +21,10 @@ def get_min_value(matrix):
         for y in range(len(matrix[0])):
             value = min(value, matrix[x][y])
     return value
+
+def get_sum_value(matrix):
+    somma = 0
+    for x in range(len(matrix)):
+        for y in range(len(matrix[0])):
+            somma += matrix[x][y]
+    return somma

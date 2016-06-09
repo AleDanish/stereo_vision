@@ -45,7 +45,7 @@ def get_fixed_window_matrix(cost_map, filter_size):
         for y in range(columns):
             for d in range(params.NUM_DISP):
                 submatrix = utils.get_submatrix(cost_map, x, y, d, filter_size)
-                matrix[x,y,d] = utils.get_min_value(submatrix)
+                matrix[x,y,d] = utils.get_sum_value(submatrix)
     return matrix
 
 def fixed_window(matrix):
@@ -55,9 +55,12 @@ def fixed_window(matrix):
     for x in range(rows):
         for y in range(columns):
             min_value = matrix[x,y,0]
+            disp = 0
             for d in range(params.NUM_DISP):
-                min_value = min(min_value, matrix[x,y,d])
-            matrix_2D[x][y] = min_value
+                if min_value > matrix[x,y,d]:
+                    min_value = matrix[x,y,d]
+                    disp = d
+            matrix_2D[x][y] = disp
     return matrix_2D
 
 def variable_window(matrix, filter_size):
@@ -66,21 +69,23 @@ def variable_window(matrix, filter_size):
     matrix_2D = np.zeros((rows,columns))
     for x in range(rows):
         for y in range(columns):
-            local_min = []
+            local_min = sys.maxsize
             for d in range(params.NUM_DISP):
                 submatrix = utils.get_submatrix(matrix, x, y, d, filter_size)
-                local_min.append(utils.get_min_value(submatrix))
-            matrix_2D[x,y] = min(local_min)
+                local_min = min(local_min, utils.get_min_value(submatrix))
+            matrix_2D[x,y] = local_min
     return matrix_2D
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    #TODO:
+    # se non inseriti utilizzo quelli di default
     parser.add_argument('-f', '--filter_size')
     parser.add_argument('-w', '--window_type')
     args = parser.parse_args()
     args_dict = vars(args)
     filter_size = int(args_dict.get('filter_size'))
-    window_type = int(args_dict.get('window_type'))
+    window_type = args_dict.get('window_type')
     if filter_size is None:
         filter_size = params.DEFAULT_FILTER_SIZE
     if window_type is None:
