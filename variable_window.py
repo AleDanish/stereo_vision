@@ -8,6 +8,7 @@ import cv2
 import argparse
 import parameters as params
 import utils
+import sys
 
 def disparity(imgL, imgR, filter_size):
     window_size = filter_size
@@ -103,19 +104,18 @@ if __name__ == '__main__':
 #    disparity = disparity(imgL, imgR, filter_size)
  
     #Cost cube aggregation
-    cost_map = cost_map(imgL, imgR)
-    fixed_window_matrix = get_fixed_window_matrix(cost_map, filter_size)
+    cost = cost_map(imgL, imgR)
+    fixed_window_matrix = get_fixed_window_matrix(cost, filter_size)
 
     if (window_type == 'all') or (window_type == 'fixed'):
         # Fixed Window
         fixed_window = fixed_window(fixed_window_matrix)
-        cv2.imshow('fixed window', fixed_window)
+        cv2.imshow('fixed window', fixed_window/params.NUM_DISP)
 
     if (window_type == 'all') or (window_type == 'variable'):
         # Variable Window
         variable_window = variable_window(fixed_window_matrix, filter_size)
-        print("variable window", variable_window)
-        cv2.imshow('variable window', variable_window)
+        cv2.imshow('variable window', variable_window/256)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
