@@ -7,8 +7,6 @@ import numpy as np
 import cv2
 import argparse
 import parameters as params
-import utils
-import sys
 from algorithms import WindowAlgorithms
 
 def disparity(imgL, imgR, filter_size):
@@ -31,25 +29,25 @@ def disparity(imgL, imgR, filter_size):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    #TODO:
-    # se non inseriti utilizzo quelli di default
     parser.add_argument('-f', '--filter_size')
     parser.add_argument('-w', '--window_type')
     args = parser.parse_args()
     args_dict = vars(args)
-    filter_size = int(args_dict.get('filter_size'))
+    filter_size = args_dict.get('filter_size')
     window_type = args_dict.get('window_type')
     if (filter_size is None) or (filter_size not in params.FILTER_SIZES):
         print("filter size not supported -> will be used the default 3x3 patch")
         filter_size = params.DEFAULT_FILTER_SIZE
+    else:
+        filter_size = int(filter_size)
     if (window_type is None) or (window_type not in params.WINDOW_TYPES):
         print("window type not supported -> will be used the default 'all'")
         window_type = params.DEFAULT_WINDOW_TYPE
 
     print('loading images...')
     # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
-    imgL = cv2.pyrDown(cv2.imread('images/img_L.png', cv2.IMREAD_GRAYSCALE))  # downscale images for faster processing
-    imgR = cv2.pyrDown(cv2.imread('images/img_R.png', cv2.IMREAD_GRAYSCALE))
+    imgL = cv2.pyrDown(cv2.imread('images/aloeL.jpg', cv2.IMREAD_GRAYSCALE))  # downscale images for faster processing
+    imgR = cv2.pyrDown(cv2.imread('images/aloeR.jpg', cv2.IMREAD_GRAYSCALE))
     if imgL is not None:
         print("Shape: " + str(imgL.shape) + ", Size: " + str(imgL.size) + ", Type: " + str(imgL.dtype))
 
@@ -65,7 +63,7 @@ if __name__ == '__main__':
         # Variable Window
         if (window_type == 'all') or (window_type == 'variable'):
             variable_window = wa.variable_window()
-            cv2.imshow('variable window', variable_window / 256)
+            cv2.imshow('variable window', variable_window / 128)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
