@@ -87,9 +87,11 @@ if __name__ == '__main__':
     args_dict = vars(args)
     filter_size = int(args_dict.get('filter_size'))
     window_type = args_dict.get('window_type')
-    if filter_size is None:
+    if (filter_size is None) or (filter_size not in params.FILTER_SIZES):
+        print("filter size not supported -> will be used the default 3x3 patch")
         filter_size = params.DEFAULT_FILTER_SIZE
-    if window_type is None:
+    if (window_type is None) or (window_type not in params.WINDOW_TYPES):
+        print("window type not supported -> will be used the default 'all'")
         window_type = params.DEFAULT_WINDOW_TYPE
 
     print('loading images...')
@@ -97,25 +99,27 @@ if __name__ == '__main__':
     imgL = cv2.pyrDown(cv2.imread('images/img_L.png', cv2.IMREAD_GRAYSCALE))  # downscale images for faster processing
     imgR = cv2.pyrDown(cv2.imread('images/img_R.png', cv2.IMREAD_GRAYSCALE))
     if imgL is not None:
-        print("Shape: " + str(imgL.shape))
-        print("Size: " + str(imgL.size))
-        print("Type: " + str(imgL.dtype))
+        print("Shape: " + str(imgL.shape) + ", Size: " + str(imgL.size) + ", Type: " + str(imgL.dtype))
 
-#    disparity = disparity(imgL, imgR, filter_size)
- 
-    #Cost cube aggregation
-    cost = cost_map(imgL, imgR)
-    fixed_window_matrix = get_fixed_window_matrix(cost, filter_size)
+    if window_type == 'disparity':
+        disparity = disparity(imgL, imgR, filter_size)
+        cv2.imshow('disparity', disparity)
+    else:
+        #Cost cube aggregation
+        print('calculating cost-cube...')
+        cost = cost_map(imgL, imgR)
+        # Patch application
+        print('calculating local costs using a patch '+ str(filter_size) + 'x' + str(filter_size) + '...')
+        fixed_window_matrix = get_fixed_window_matrix(cost, filter_size)
 
-    if (window_type == 'all') or (window_type == 'fixed'):
         # Fixed Window
-        fixed_window = fixed_window(fixed_window_matrix)
-        cv2.imshow('fixed window', fixed_window/params.NUM_DISP)
-
-    if (window_type == 'all') or (window_type == 'variable'):
+        if (window_type == 'all') or (window_type == 'fixed'):
+            fixed_window = fixed_window(fixed_window_matrix)
+            cv2.imshow('fixed window', fixed_window / params.NUM_DISP)
         # Variable Window
-        variable_window = variable_window(fixed_window_matrix, filter_size)
-        cv2.imshow('variable window', variable_window/256)
+        if (window_type == 'all') or (window_type == 'variable'):
+            variable_window = variable_window(fixed_window_matrix, filter_size)
+            cv2.imshow('variable window', variable_window / 256)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
