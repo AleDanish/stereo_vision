@@ -9,6 +9,7 @@ import argparse
 import parameters as params
 import utils
 import sys
+from algorithms import WindowAlgorithms
 
 def disparity(imgL, imgR, filter_size):
     window_size = filter_size
@@ -27,55 +28,6 @@ def disparity(imgL, imgR, filter_size):
     disparity = (disp-params.MIN_DISP)/params.NUM_DISP
     cv2.imshow('disparity',  disparity)
     return disparity
-
-def cost_map(imgL, imgR):
-    rows = len(imgL)
-    columns = len(imgL[0])
-    cost = np.zeros((rows, columns, params.NUM_DISP))
-    for x in range(0, rows-1):
-        for y in range(0, columns-1):
-            for d in range(0, params.NUM_DISP):
-                cost[x,y,d] = abs(int(imgL[x,y]) - int(imgR[x-d,y]))
-    return cost
-
-def get_fixed_window_matrix(cost_map, filter_size):
-    rows = len(cost_map)
-    columns = len(cost_map[0])
-    matrix = np.zeros((rows, columns, params.NUM_DISP))
-    for x in range(rows):
-        for y in range(columns):
-            for d in range(params.NUM_DISP):
-                submatrix = utils.get_submatrix(cost_map, x, y, d, filter_size)
-                matrix[x,y,d] = utils.get_sum_value(submatrix)
-    return matrix
-
-def fixed_window(matrix):
-    rows = len(matrix)
-    columns = len(matrix[0])
-    matrix_2D = np.zeros((rows,columns))
-    for x in range(rows):
-        for y in range(columns):
-            min_value = matrix[x,y,0]
-            disp = 0
-            for d in range(params.NUM_DISP):
-                if min_value > matrix[x,y,d]:
-                    min_value = matrix[x,y,d]
-                    disp = d
-            matrix_2D[x][y] = disp
-    return matrix_2D
-
-def variable_window(matrix, filter_size):
-    rows = len(matrix)
-    columns = len(matrix[0])
-    matrix_2D = np.zeros((rows,columns))
-    for x in range(rows):
-        for y in range(columns):
-            local_min = sys.maxsize
-            for d in range(params.NUM_DISP):
-                submatrix = utils.get_submatrix(matrix, x, y, d, filter_size)
-                local_min = min(local_min, utils.get_min_value(submatrix))
-            matrix_2D[x,y] = local_min
-    return matrix_2D
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -105,20 +57,14 @@ if __name__ == '__main__':
         disparity = disparity(imgL, imgR, filter_size)
         cv2.imshow('disparity', disparity)
     else:
-        #Cost cube aggregation
-        print('calculating cost-cube...')
-        cost = cost_map(imgL, imgR)
-        # Patch application
-        print('calculating local costs using a patch '+ str(filter_size) + 'x' + str(filter_size) + '...')
-        fixed_window_matrix = get_fixed_window_matrix(cost, filter_size)
-
+        wa = WindowAlgorithms(imgR, imgL, filter_size)
         # Fixed Window
         if (window_type == 'all') or (window_type == 'fixed'):
-            fixed_window = fixed_window(fixed_window_matrix)
+            fixed_window = wa.fixed_window()
             cv2.imshow('fixed window', fixed_window / params.NUM_DISP)
         # Variable Window
         if (window_type == 'all') or (window_type == 'variable'):
-            variable_window = variable_window(fixed_window_matrix, filter_size)
+            variable_window = wa.variable_window()
             cv2.imshow('variable window', variable_window / 256)
 
     cv2.imshow('left', imgL)
