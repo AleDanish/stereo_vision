@@ -4,7 +4,7 @@ Fixed window and variable window stereo vision algorithms implementation for den
 
 Algorithms can be executing by typing::
 
-  python variable_window.py -f 3 -w all
+   python variable_window.py -f 3 -w all
 
 Parameters:
 
