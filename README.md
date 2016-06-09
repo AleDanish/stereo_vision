@@ -3,6 +3,7 @@
 Fixed window and variable window stereo vision algorithms implementation for dense 3D reconstruction.
 
 Algorithms can be executing by typing::
+
   python variable_window.py -f 3 -w all
 
 Parameters:
