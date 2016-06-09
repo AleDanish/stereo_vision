@@ -9,10 +9,10 @@ Fixed window and variable window stereo vision algorithms implementation for den
 
 * Parameters:
 
--f | --filter_size : indicate the size of the patch. Default value: 3. Values allowed: 3, 5, 7, 9.
+`-f | --filter_size` : indicate the size of the patch. Default value: 3. Values allowed: 3, 5, 7, 9.
 
--w | -- window_type : indicate the type of execution. Default: all. Values allowed::
-   `all` - fixed and variable window algorithms execution
-   `fixed` - fixed window algorithm execution
-   `variable` - variable window algorithm execution
-   `disparity` - shows only the disparity map
+`-w | -- window_type` : indicate the type of execution. Default: all. Values allowed:
+   `all` - fixed and variable window algorithms execution.
+   `fixed` - fixed window algorithm execution.
+   `variable` - variable window algorithm execution.
+   `disparity` - shows only the disparity map.
