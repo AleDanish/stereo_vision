@@ -22,7 +22,7 @@ def disparity(imgL, imgR, filter_size):
         speckleWindowSize = params.SPECKLEWINDOWSIZE,
         speckleRange = params.SPECKLERANGE)
     print('computing disparity...')
-    disp = stereo.compute(imgL, imgR).astype(np.float32) / 16.0
+    disp = stereo.compute(imgL, imgR).astype(np.float32) / params.NUM_DISP
     disparity = (disp-params.MIN_DISP)/params.NUM_DISP
     cv2.imshow('disparity',  disparity)
     return disparity
@@ -55,7 +55,10 @@ if __name__ == '__main__':
         disparity = disparity(imgL, imgR, filter_size)
         cv2.imshow('disparity', disparity)
     else:
-        wa = WindowAlgorithms(imgR, imgL, filter_size)
+        wa = WindowAlgorithms(imgL, imgR, filter_size)
+#        a = wa.fixed_window(wa.cost_map())
+#        cv2.imshow("a",a/params.NUM_DISP)
+#        cv2.waitKey()
         # Fixed Window
         if (window_type == 'all') or (window_type == 'fixed'):
             fixed_window = wa.fixed_window()
@@ -63,7 +66,7 @@ if __name__ == '__main__':
         # Variable Window
         if (window_type == 'all') or (window_type == 'variable'):
             variable_window = wa.variable_window()
-            cv2.imshow('variable window', variable_window / 128)
+            cv2.imshow('variable window', variable_window / params.NUM_DISP)
 
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
