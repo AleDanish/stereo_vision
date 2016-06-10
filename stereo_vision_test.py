@@ -45,9 +45,8 @@ if __name__ == '__main__':
         window_type = params.DEFAULT_WINDOW_TYPE
 
     print('loading images...')
-    # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
-    imgL = cv2.pyrDown(cv2.imread('images/aloeL.jpg', cv2.IMREAD_GRAYSCALE))  # downscale images for faster processing
-    imgR = cv2.pyrDown(cv2.imread('images/aloeR.jpg', cv2.IMREAD_GRAYSCALE))
+    imgL = cv2.pyrDown(cv2.imread('images/Tsukuba_L.png', cv2.IMREAD_GRAYSCALE)) # retrieve the intensity of the pixels by cv2.IMREAD_GRAYSCALE
+    imgR = cv2.pyrDown(cv2.imread('images/Tsukuba_R.png', cv2.IMREAD_GRAYSCALE)) # downscale images for faster processing
     if imgL is not None:
         print("Shape: " + str(imgL.shape) + ", Size: " + str(imgL.size) + ", Type: " + str(imgL.dtype))
 
@@ -56,19 +55,14 @@ if __name__ == '__main__':
         cv2.imshow('disparity', disparity)
     else:
         wa = WindowAlgorithms(imgL, imgR, filter_size)
-#        a = wa.fixed_window(wa.cost_map())
-#        cv2.imshow("a",a/params.NUM_DISP)
-#        cv2.waitKey()
-        # Fixed Window
-        if (window_type == 'all') or (window_type == 'fixed'):
+        if (window_type == 'all') or (window_type == 'fixed'): # Fixed Window
             fixed_window = wa.fixed_window()
             cv2.imshow('fixed window', fixed_window / params.NUM_DISP)
-        # Variable Window
-        if (window_type == 'all') or (window_type == 'variable'):
+        if (window_type == 'all') or (window_type == 'variable'): # Variable Window
             variable_window = wa.variable_window()
             cv2.imshow('variable window', variable_window / params.NUM_DISP)
-
     cv2.imshow('left', imgL)
     cv2.imshow('right', imgR)
     cv2.waitKey()
     cv2.destroyAllWindows()
+    print('done')
