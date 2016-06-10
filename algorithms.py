@@ -6,7 +6,7 @@
 import numpy as np
 import parameters as params
 import utils
-import sys
+import cv2
 
 class WindowAlgorithms(object):
 
@@ -16,59 +16,62 @@ class WindowAlgorithms(object):
         self.rows = len(imgL)
         self.columns = len(imgL[0])
         self.filter_size = filter_size
-        #Cost cube aggregation
         print('calculating cost-cube...')
         self.cost_map = self.calculate_cost_map()
-        # Patch application
-        print('calculating local costs using a patch '+ str(self.filter_size) + 'x' + str(self.filter_size) + '...')
+        print('calculating local costs using a ' + str(self.filter_size) + 'x' + str(self.filter_size) + ' patch...')
         self.fw_3D_matrix = self.get_fixed_window_matrix()
         self.fw_2D_matrix = np.zeros((self.rows, self.columns)) 
 
     def calculate_cost_map(self):
-        self.cost_map = np.zeros((self.rows, self.columns, params.NUM_DISP))
-        for x in range(0, self.rows-1):
-            for y in range(0, self.columns-1):
-                for d in range(0, params.NUM_DISP):
-                    self.cost_map[x,y,d] = abs(int(self.imgL[x,y]) - int(self.imgR[x-d,y]))
+        self.cost_map = np.zeros((params.NUM_DISP, self.rows, self.columns))
+        for d in range(params.NUM_DISP):
+            for x in range(self.rows):
+                for y in range(self.columns):
+                    self.cost_map[d, x, y] = abs(int(self.imgL[x, y]) - int(self.imgR[x, y - d]))
         return self.cost_map
 
     def get_fixed_window_matrix(self):
-        self.fw_3D_matrix = np.zeros((self.rows, self.columns, params.NUM_DISP))
-        for x in range(self.rows):
-            for y in range(self.columns):
-                for d in range(params.NUM_DISP):
-                    submatrix = utils.get_submatrix(self.cost_map, x, y, d, self.filter_size)
-                    self.fw_3D_matrix[x,y,d] = utils.get_sum_value(submatrix)
+        self.fw_3D_matrix = np.zeros((params.NUM_DISP, self.rows, self.columns))
+        for d in range(params.NUM_DISP):
+            self.fw_3D_matrix[d] = cv2.boxFilter(self.cost_map[d], -1, (self.filter_size, self.filter_size))
         return self.fw_3D_matrix
 
     def fixed_window(self):
         if self.fw_3D_matrix is None:
-            print('re-calculating cost-cube and local costs using a patch '+ str(self.filter_size) + 'x' + str(self.filter_size) + '...')
+            print('re-calculating cost-cube and local costs using a ' + str(self.filter_size) + 'x' + str(self.filter_size) + ' patch...')
             self.get_fixed_window_matrix(self.calculate_cost_map())
         print('executing fixed window algorithm...')
         self.fw_2D_matrix = np.zeros((self.rows, self.columns))
         for x in range(self.rows):
             for y in range(self.columns):
-                min_value = self.fw_3D_matrix[x,y,0]
+                min_value = self.fw_3D_matrix[0, x, y]
                 disp = 0
                 for d in range(params.NUM_DISP):
-                    if min_value > self.fw_3D_matrix[x,y,d]:
-                        min_value = self.fw_3D_matrix[x,y,d]
+                    if min_value > self.fw_3D_matrix[d, x, y]:
+                        min_value = self.fw_3D_matrix[d, x, y]
                         disp = d
                 self.fw_2D_matrix[x][y] = disp
         return self.fw_2D_matrix
 
     def variable_window(self):
         if self.fw_3D_matrix is None:
-            print('re-calculating cost-cube and local costs using a patch '+ str(self.filter_size) + 'x' + str(self.filter_size) + '...')
+            print('re-calculating cost-cube and local costs using a ' + str(self.filter_size) + 'x' + str(self.filter_size) + ' patch...')
             self.get_fixed_window_matrix(self.calculate_cost_map())
         print('executing variable window algorithm...')
+        vw_3D_matrix = np.zeros((params.NUM_DISP, self.rows, self.columns))
         self.fw_2D_matrix = np.zeros((self.rows, self.columns))
+        for d in range(params.NUM_DISP):
+            for x in range(self.rows):
+                for y in range(self.columns):
+                    submatrix = utils.get_submatrix(self.fw_3D_matrix[d], x, y, self.filter_size)
+                    vw_3D_matrix[d, x, y] = utils.get_min_value(submatrix)
         for x in range(self.rows):
             for y in range(self.columns):
-                local_min = sys.maxsize
+                min_value = vw_3D_matrix[0, x, y]
+                disp = 0
                 for d in range(params.NUM_DISP):
-                    submatrix = utils.get_submatrix(self.fw_3D_matrix, x, y, d, self.filter_size)
-                    local_min = min(local_min, utils.get_min_value(submatrix))
-                self.fw_2D_matrix[x,y] = local_min
+                    if min_value > vw_3D_matrix[d, x, y]:
+                        min_value = vw_3D_matrix[d, x, y]
+                        disp = d
+                self.fw_2D_matrix[x][y] = disp
         return self.fw_2D_matrix
